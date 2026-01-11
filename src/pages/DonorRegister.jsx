@@ -9,14 +9,11 @@ export { Emergency }; // Export for App.jsx to use temporarily
 
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { addDonor } from '../services/donorService'; // Import Service
-import { supabase } from '../services/supabase'; // Import Supabase
 
 const DonorRegister = () => {
               const navigate = useNavigate();
               const [formData, setFormData] = useState({
                             fullName: '',
-                            email: '', // Added Email
-                            password: '', // Added Password
                             bloodGroup: '',
                             pincode: '',
                             contact: '',
@@ -62,43 +59,17 @@ const DonorRegister = () => {
 
                             setLoading(true);
 
-                            // 1. Sign Up User in Supabase Auth
-                            const { data: authData, error: authError } = await supabase.auth.signUp({
-                                          email: formData.email,
-                                          password: formData.password,
-                                          options: {
-                                                        data: { full_name: formData.fullName }
-                                          }
-                            });
-
-                            if (authError) {
-                                          alert("Error creating account: " + authError.message);
-                                          setLoading(false);
-                                          return;
-                            }
-
-                            // 2. Add Donor Profile (Linked to User ID)
-                            const donorPayload = {
-                                          ...formData,
-                                          user_id: authData.user.id, // LINK THE ACCOUNTS
-                                          is_available: true // Default to available
-                            };
-
-                            // Remove password and email from payload before saving to DB
-                            delete donorPayload.password;
-                            delete donorPayload.email;
-
-                            const result = await addDonor(donorPayload);
+                            // Call Firebase Service
+                            const result = await addDonor(formData);
 
                             setLoading(false);
                             if (result.success) {
                                           setSubmitted(true);
-                                          // Auto Login is handled by signUp usually, but we can verify later
                                           setTimeout(() => {
-                                                        navigate('/dashboard'); // Redirect to Dashboard
+                                                        navigate('/emergency'); // Redirect after success
                                           }, 2000);
                             } else {
-                                          alert("Error saving profile: " + result.error);
+                                          alert("Error registering donor: " + result.error);
                             }
               };
 
@@ -157,35 +128,6 @@ const DonorRegister = () => {
                                                                                                                               style={{ width: '100%', padding: '0.75rem 0.75rem 0.75rem 2.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1', outline: 'none' }}
                                                                                                                 />
                                                                                                   </div>
-                                                                                    </div>
-
-                                                                                    {/* Email (Login) */}
-                                                                                    <div>
-                                                                                                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', color: '#475569' }}>Email (for Login)</label>
-                                                                                                  <input
-                                                                                                                type="email"
-                                                                                                                name="email"
-                                                                                                                required
-                                                                                                                placeholder="john@example.com"
-                                                                                                                value={formData.email}
-                                                                                                                onChange={handleChange}
-                                                                                                                style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1', outline: 'none' }}
-                                                                                                  />
-                                                                                    </div>
-
-                                                                                    {/* Password (Login) */}
-                                                                                    <div>
-                                                                                                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', color: '#475569' }}>Password (min 6 chars)</label>
-                                                                                                  <input
-                                                                                                                type="password"
-                                                                                                                name="password"
-                                                                                                                required
-                                                                                                                minLength="6"
-                                                                                                                placeholder="••••••••"
-                                                                                                                value={formData.password}
-                                                                                                                onChange={handleChange}
-                                                                                                                style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1', outline: 'none' }}
-                                                                                                  />
                                                                                     </div>
 
                                                                                     {/* Blood Group */}
