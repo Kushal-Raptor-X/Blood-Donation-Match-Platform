@@ -23,7 +23,6 @@ const Navbar = () => {
                                                         <div className="hidden md:flex" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
                                                                       <Link to="/" style={{ fontWeight: 600, color: 'var(--color-text-dark)' }}>Home</Link>
                                                                       <Link to="/about" style={{ fontWeight: 600, color: 'var(--color-text-dark)' }}>About</Link>
-                                                                      <Link to="/login" style={{ fontWeight: 600, color: 'var(--color-primary)' }}>Login</Link>
                                                                       <Link to="/register-donor">
                                                                                     <motion.button
                                                                                                   whileHover={{ scale: 1.05 }}
