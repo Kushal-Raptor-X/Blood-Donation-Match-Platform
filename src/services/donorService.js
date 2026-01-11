@@ -13,7 +13,10 @@ export const addDonor = async (donorData) => {
                                           lastDonation: donorData.lastDonation || null,
                                           illness: donorData.illness || null,
                                           age: donorData.age ? parseInt(donorData.age) : null,
-                                          weight: donorData.weight ? parseInt(donorData.weight) : null
+                                          age: donorData.age ? parseInt(donorData.age) : null,
+                                          weight: donorData.weight ? parseInt(donorData.weight) : null,
+                                          user_id: donorData.user_id || null,
+                                          is_available: donorData.is_available !== undefined ? donorData.is_available : true
                             };
 
                             const { data, error } = await supabase
