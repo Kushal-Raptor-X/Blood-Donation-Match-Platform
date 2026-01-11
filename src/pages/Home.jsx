@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'; // Updated
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { Activity, ShieldCheck, Zap, X, AlertTriangle } from 'lucide-react';
@@ -70,22 +70,9 @@ const Home = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
                     >
-                        <span style={{
-                            background: 'rgba(220, 20, 60, 0.1)',
-                            color: 'var(--color-primary)',
-                            padding: '0.5rem 1rem',
-                            borderRadius: '50px',
-                            fontWeight: 700,
-                            fontSize: '0.9rem',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            display: 'inline-block',
-                            marginBottom: '1.5rem'
-                        }}>
-                            #TechSprint Hackathon
-                        </span>
+
                         <h1 style={{ fontSize: '3.5rem', marginBottom: '1.5rem', lineHeight: '1.2' }}>
-                            Connect Life in <br />
+                            Saving Lives in <br />
                             <span className="text-gradient">Seconds, Not Hours.</span>
                         </h1>
                         <p style={{ fontSize: '1.25rem', color: '#64748b', marginBottom: '2.5rem', lineHeight: '1.6' }}>
