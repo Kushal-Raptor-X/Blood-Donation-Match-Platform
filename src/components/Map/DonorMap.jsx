@@ -83,24 +83,17 @@ const DonorMap = ({ donors, selectedDonorId, onMarkerClick, recipientLocation })
                 <Marker
                     position={recipientLocation}
                     icon={{
-                        // Custom SVG Path for a "User Pin"
+                        // Re-using the SVG Pin but scaling it to match the Default Marker size (~40px)
                         path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
-                        fillColor: "#4285F4", // Google Blue for Recipient
+                        fillColor: "#4285F4", // Google Blue
                         fillOpacity: 1,
-                        strokeWeight: 2,
+                        strokeWeight: 1,
                         strokeColor: "white",
-                        scale: 1.8,
-                        anchor: new window.google.maps.Point(12, 22), // Bottom tip of the pin
-                        labelOrigin: new window.google.maps.Point(12, -10)
+                        scale: 1.5, // Matches standard pin size better than 1.0 or the small PNGs
+                        anchor: new window.google.maps.Point(12, 22),
                     }}
-                    label={{
-                        text: "You",
-                        color: "#1e293b", // Dark text
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                        className: "map-label"
-                    }}
-                    zIndex={1001} // Higher than others
+                    title="You are here"
+                    zIndex={1001}
                 />
             )}
 
