@@ -184,10 +184,10 @@ const Emergency = () => {
     return (
         <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Navbar />
-            <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
+            <div className="emergency-layout">
 
                 {/* LIST PANEL */}
-                <div style={{ width: '400px', background: 'white', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', zIndex: 10 }}>
+                <div className="emergency-sidebar">
                     <div style={{ padding: '1.5rem', borderBottom: '1px solid #e2e8f0' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                             <h2 style={{ fontSize: '1.5rem', color: '#1e293b', margin: 0 }}>Emergency Search</h2>
@@ -290,7 +290,7 @@ const Emergency = () => {
                 </div>
 
                 {/* MAP PANEL */}
-                <div style={{ flex: 1, background: '#f1f5f9', position: 'relative' }}>
+                <div className="emergency-map">
                     {isLoaded && (
                         <DonorMap
                             donors={finalDisplayList}
