@@ -1,23 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Layout/Navbar';
 import DonorMap from '../components/Map/DonorMap';
 import GeminiAdvisor from '../components/AI/GeminiAdvisor';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, MessageCircle, Clock } from 'lucide-react';
+import { MapPin, Phone, MessageCircle, Clock, AlertTriangle, Heart } from 'lucide-react';
 import { useJsApiLoader } from '@react-google-maps/api';
 
-import { getDonors } from '../services/donorService';
+import { getDonors, createEmergencyAlert } from '../services/donorService';
 
 const libraries = ['places', 'geometry'];
 
 const Emergency = () => {
+    const location = useLocation();
     const [donors, setDonors] = useState([]);
     const [processedDonors, setProcessedDonors] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [recipientBloodGroup, setRecipientBloodGroup] = useState('');
+    const [recipientBloodGroup, setRecipientBloodGroup] = useState(location.state?.bloodGroup || 'O+');
     const [patientLocation, setPatientLocation] = useState(null);
     const [locationStatus, setLocationStatus] = useState('Initializing...');
-    const [selectedDonorId, setSelectedDonorId] = useState(null); // Linked State
+    const [selectedDonorId, setSelectedDonorId] = useState(null);
+    // Removed SOS local state
+
 
     // Load Maps Script
     const { isLoaded, loadError } = useJsApiLoader({
@@ -70,6 +74,15 @@ const Emergency = () => {
 
         return () => { mounted = false; };
     }, []);
+
+    // 2.5 Handle Incoming Alert from Home Page
+    useEffect(() => {
+        if (location.state?.alertSent && !loading && finalDisplayList.length > 0) {
+            // Auto Select Nearest
+            const nearest = finalDisplayList[0];
+            handleSelectDonor(nearest);
+        }
+    }, [location.state, loading, processedDonors]); // Dependencies to ensure logic runs after load
 
     // 2. Geocode & Process (Only when Script Loaded)
     useEffect(() => {
@@ -176,6 +189,39 @@ const Emergency = () => {
         if (listItem) {
             listItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+    };
+    // SOS LOGIC
+    const handleSOS = async () => {
+        if (!patientLocation) {
+            alert("Location not found yet. Please wait.");
+            return;
+        }
+
+        // 1. Find Nearest Donor
+        if (finalDisplayList.length > 0) {
+            const nearest = finalDisplayList[0];
+            setSelectedDonorId(nearest.id); // Highlight on Map & List
+
+            // Auto-scroll
+            const listItem = document.getElementById(`donor-item-${nearest.id}`);
+            if (listItem) listItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // 2. Mock Backend Alert
+        const alertData = {
+            location: patientLocation,
+            bloodGroup: recipientBloodGroup || 'Unknown',
+            type: 'SOS'
+        };
+
+        // Fire and forget (awaiting for demo feedback)
+        const res = await createEmergencyAlert(alertData);
+        if (res.success) {
+            setAlertSent(true);
+        }
+
+        // 3. UI
+        setSosModalOpen(true);
     };
 
     // Safety check for Map Loading
@@ -296,7 +342,6 @@ const Emergency = () => {
                             donors={finalDisplayList}
                             selectedDonorId={selectedDonorId}
                             onMarkerClick={handleSelectDonor}
-                            recipientLocation={patientLocation}
                         />
                     )}
 
@@ -307,6 +352,7 @@ const Emergency = () => {
             </div>
         </div>
     );
+
 };
 
 export default Emergency;
