@@ -17,7 +17,7 @@ const defaultCenter = {
  * Purely presentational.
  * Controlled by parent via 'selectedDonorId' and 'onMarkerClick'.
  */
-const DonorMap = ({ donors, selectedDonorId, onMarkerClick }) => {
+const DonorMap = ({ donors, selectedDonorId, onMarkerClick, recipientLocation }) => {
               const [map, setMap] = useState(null);
               const [activeDonor, setActiveDonor] = useState(null);
 
@@ -49,7 +49,7 @@ const DonorMap = ({ donors, selectedDonorId, onMarkerClick }) => {
               return (
                             <GoogleMap
                                           mapContainerStyle={containerStyle}
-                                          center={defaultCenter}
+                                          center={recipientLocation || defaultCenter}
                                           zoom={11}
                                           onLoad={onLoad}
                                           onUnmount={onUnmount}
@@ -60,6 +60,18 @@ const DonorMap = ({ donors, selectedDonorId, onMarkerClick }) => {
                                                         fullscreenControl: false,
                                           }}
                             >
+                                          {/* Recipient / User Location Marker (Blue) */}
+                                          {recipientLocation && (
+                                                        <Marker
+                                                                      position={recipientLocation}
+                                                                      icon={{
+                                                                                    url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                                                                      }}
+                                                                      zIndex={100} // Keep on top
+                                                                      title="Your Location"
+                                                        />
+                                          )}
+
                                           {donors.map((donor) => {
                                                         // Only render valid locations
                                                         if (!donor.location || typeof donor.location.lat !== 'number') return null;

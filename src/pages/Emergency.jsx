@@ -342,6 +342,7 @@ const Emergency = () => {
                             donors={finalDisplayList}
                             selectedDonorId={selectedDonorId}
                             onMarkerClick={handleSelectDonor}
+                            recipientLocation={patientLocation}
                         />
                     )}
 

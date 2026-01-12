@@ -1,22 +1,33 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 
-// Pages
+// 1. The Blue Pin / Map Feature (usually on Home)
 import Home from './pages/Home';
-import DonorRegister from './pages/DonorRegister'; // We will create this next
-import Emergency from './pages/Emergency'; // We will create this next
+
+// 2. The Login Feature
+import Login from './pages/Login';
+import DonorRegister from './pages/DonorRegister';
+import DonorDashboard from './pages/DonorDashboard';
+
+// 3. The Emergency Button Feature
+import Emergency from './pages/Emergency';
 
 function App() {
   return (
     <Router>
-      <div className="app-container">
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/register-donor" element={<DonorRegister />} />
-            <Route path="/emergency" element={<Emergency />} />
-          </Routes>
-        </main>
+      <div className="App">
+        <Routes>
+          {/* Route for the Blue Pin Map (Home) */}
+          <Route path="/" element={<Home />} />
+
+          {/* Routes for Login & Donors */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register-donor" element={<DonorRegister />} />
+          <Route path="/dashboard" element={<DonorDashboard />} />
+
+          {/* Route for the Emergency Button */}
+          <Route path="/emergency" element={<Emergency />} />
+        </Routes>
       </div>
     </Router>
   );

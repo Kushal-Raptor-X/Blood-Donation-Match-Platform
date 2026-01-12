@@ -26,18 +26,11 @@ const Navbar = () => {
                                                                       </span>
                                                         </Link>
 
-<<<<<<< HEAD
                                                         {/* Desktop Links (Hidden on Mobile) */}
                                                         <div className="desktop-only" style={{ gap: '2rem', alignItems: 'center' }}>
                                                                       <Link to="/" style={{ fontWeight: 600, color: 'var(--color-text-dark)', textDecoration: 'none' }}>Home</Link>
                                                                       <Link to="/about" style={{ fontWeight: 600, color: 'var(--color-text-dark)', textDecoration: 'none' }}>About</Link>
                                                                       <Link to="/login" style={{ fontWeight: 600, color: 'var(--color-primary)', textDecoration: 'none' }}>Login</Link>
-=======
-                                                        {/* Desktop Links */}
-                                                        <div className="hidden md:flex" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-                                                                      <Link to="/" style={{ fontWeight: 600, color: 'var(--color-text-dark)' }}>Home</Link>
-                                                                      <Link to="/about" style={{ fontWeight: 600, color: 'var(--color-text-dark)' }}>About</Link>
->>>>>>> 08a33b23ffcb4c67c8b30977f2e4bc9bf253e563
                                                                       <Link to="/register-donor">
                                                                                     <motion.button
                                                                                                   whileHover={{ scale: 1.05 }}
