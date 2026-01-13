@@ -16,6 +16,8 @@ export const addDonor = async (donorData) => {
                                           weight: donorData.weight ? parseInt(donorData.weight) : null
                             };
 
+                            console.log("Attempting to insert donor data:", dataToSave);
+
                             const { data, error } = await supabase
                                           .from(TABLE_NAME)
                                           .insert([dataToSave])

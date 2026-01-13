@@ -76,7 +76,7 @@ const Home = () => {
                             <span className="text-gradient">Seconds, Not Hours.</span>
                         </h1>
                         <p style={{ fontSize: '1.25rem', color: '#64748b', marginBottom: '2.5rem', lineHeight: '1.6' }}>
-                            We use <strong style={{ color: 'var(--color-text-dark)' }}>Google Maps</strong> & <strong style={{ color: 'var(--color-text-dark)' }}>Gemini AI</strong> to instantly match critical blood requests with nearby verified donors.
+                            We use <strong style={{ color: 'var(--color-text-dark)' }}>Google Maps</strong> to instantly match critical blood requests with nearby verified donors.
                             Verified Donors. Instant alerts. No delays.
                         </p>
 

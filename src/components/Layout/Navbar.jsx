@@ -18,11 +18,9 @@ const Navbar = () => {
                                           <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
                                                         {/* Logo */}
                                                         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
-                                                                      <div style={{ background: 'var(--color-primary)', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                                    <Heart color="white" fill="white" size={24} />
-                                                                      </div>
+                                                                      <img src="/logo.png" alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
                                                                       <span style={{ fontSize: '1.5rem', fontWeight: '800', letterSpacing: '-0.5px', color: 'var(--color-primary)' }}>
-                                                                                    Blood<span style={{ color: 'var(--color-text-dark)' }}>Match</span>
+                                                                                    Blood<span style={{ color: 'var(--color-text-dark)' }}>Connect</span>
                                                                       </span>
                                                         </Link>
 

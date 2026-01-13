@@ -95,7 +95,7 @@ const Login = () => {
                                                                       </form>
 
                                                                       <p style={{ marginTop: '1.5rem', textAlign: 'center', color: '#64748b', fontSize: '0.9rem' }}>
-                                                                                    New to BloodMatch? <Link to="/register-donor" style={{ color: '#dc2626', fontWeight: 600, textDecoration: 'none' }}>Register as Donor</Link>
+                                                                                    New to Blood Connect? <Link to="/register-donor" style={{ color: '#dc2626', fontWeight: 600, textDecoration: 'none' }}>Register as Donor</Link>
                                                                       </p>
                                                         </motion.div>
                                           </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Layout/Navbar';
 import DonorMap from '../components/Map/DonorMap';
-import GeminiAdvisor from '../components/AI/GeminiAdvisor';
+
 import { motion } from 'framer-motion';
 import { MapPin, Phone, MessageCircle, Clock, AlertTriangle, Heart } from 'lucide-react';
 import { useJsApiLoader } from '@react-google-maps/api';
@@ -347,7 +347,7 @@ const Emergency = () => {
                     )}
 
                     <div style={{ position: 'absolute', bottom: '2rem', right: '2rem', zIndex: 10 }}>
-                        <GeminiAdvisor />
+
                     </div>
                 </div>
             </div>

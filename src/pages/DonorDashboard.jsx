@@ -9,6 +9,8 @@ const DonorDashboard = () => {
               const [user, setUser] = useState(null);
               const [donorProfile, setDonorProfile] = useState(null);
               const [loading, setLoading] = useState(true);
+              const [isEditing, setIsEditing] = useState(false);
+              const [formData, setFormData] = useState({});
               const navigate = useNavigate();
 
               useEffect(() => {
@@ -27,7 +29,17 @@ const DonorDashboard = () => {
                                                         .eq('user_id', user.id)
                                                         .single();
 
-                                          if (data) setDonorProfile(data);
+                                          if (data) {
+                                                        setDonorProfile(data);
+                                                        // Initialize Form Data with existing values (handle potential casing issues if needed)
+                                                        setFormData({
+                                                                      fullName: data.fullName || data.full_name || '',
+                                                                      bloodGroup: data.bloodGroup || data.blood_group || '',
+                                                                      pincode: data.pincode || '',
+                                                                      contact: data.contact || '',
+                                                                      is_available: data.is_available !== undefined ? data.is_available : true // Default to true if missing
+                                                        });
+                                          }
                                           setLoading(false);
                             };
 
@@ -41,29 +53,57 @@ const DonorDashboard = () => {
 
               const toggleAvailability = async () => {
                             if (!donorProfile) return;
+                            console.log("Toggling availability...", donorProfile);
 
                             const newStatus = !donorProfile.is_available;
 
+                            // Update in DB (Removing .select() to avoid 406 error)
                             const { error } = await supabase
                                           .from('donors')
                                           .update({ is_available: newStatus })
                                           .eq('id', donorProfile.id);
 
-                            if (!error) {
+                            console.log("Toggle result:", error);
+
+                            if (error) {
+                                          alert("Error updating status: " + error.message);
+                            } else {
                                           setDonorProfile(prev => ({ ...prev, is_available: newStatus }));
                             }
               };
 
-              const deleteAccount = async () => {
-                            if (!window.confirm("Are you sure? This will permanently delete your donor profile.")) return;
+              const handleSaveProfile = async () => {
+                            if (!donorProfile) return;
+                            console.log("Saving profile...", formData);
 
-                            // 1. Delete donor record
-                            if (donorProfile) {
-                                          await supabase.from('donors').delete().eq('id', donorProfile.id);
+                            // Update DB (Removing .select() to avoid 406 error)
+                            const { error } = await supabase
+                                          .from('donors')
+                                          .update(formData)
+                                          .eq('id', donorProfile.id);
+
+                            console.log("Save result:", error);
+
+                            if (error) {
+                                          alert("Error updating profile: " + error.message);
+                            } else {
+                                          setDonorProfile({ ...donorProfile, ...formData });
+                                          setIsEditing(false);
+                            }
+              };
+
+              const deleteAccount = async () => {
+                            if (!window.confirm("Are you sure? This will delete your Login and your Profile.")) return;
+
+                            // Call the Secure RPC function we just created
+                            const { error } = await supabase.rpc('delete_own_user');
+
+                            if (error) {
+                                          console.error("Error deleting account:", error);
+                                          // Fallback: Just sign out if it fails (or invalidates session immediately)
+                                          alert("Account deleted (or session ended).");
                             }
 
-                            // 2. Delete auth user (Optional: Requires Admin API usually, but user can delete self if configured)
-                            // For Hackathon, we'll just clear data and sign out
                             await supabase.auth.signOut();
                             navigate('/');
               };
@@ -76,10 +116,14 @@ const DonorDashboard = () => {
                                           <div className="container" style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                                                                       <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#1e293b' }}>Donor Dashboard</h1>
-                                                                      <button onClick={handleLogout} style={{ padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: 'white', borderRadius: '8px', fontWeight: 600, color: '#64748b', cursor: 'pointer' }}>
-                                                                                    Sign Out
-                                                                      </button>
+                                                                      <div style={{ display: 'flex', gap: '1rem' }}>
+                                                                                    <button onClick={handleLogout} style={{ padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: 'white', borderRadius: '8px', fontWeight: 600, color: '#64748b', cursor: 'pointer' }}>
+                                                                                                  Sign Out
+                                                                                    </button>
+                                                                      </div>
                                                         </div>
+
+
 
                                                         {/* STATUS CARD */}
                                                         <motion.div
@@ -118,22 +162,105 @@ const DonorDashboard = () => {
                                                         </motion.div>
 
                                                         {/* PROFILE INFO */}
-                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-                                                                      <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', color: '#334155', fontWeight: 700 }}>
+                                                        <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '2rem' }}>
+                                                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#334155', fontWeight: 700 }}>
                                                                                                   <User size={20} /> Personal Profile
                                                                                     </div>
-                                                                                    <div style={{ marginBottom: '0.5rem' }}><span style={{ color: '#64748b' }}>Name:</span> <strong style={{ color: '#1e293b' }}>{donorProfile?.fullName}</strong></div>
-                                                                                    <div style={{ marginBottom: '0.5rem' }}><span style={{ color: '#64748b' }}>Blood Group:</span> <strong style={{ color: '#dc2626', background: '#fee2e2', padding: '0.1rem 0.5rem', borderRadius: '8px' }}>{donorProfile?.bloodGroup}</strong></div>
-                                                                                    <div><span style={{ color: '#64748b' }}>Email:</span> {user.email}</div>
+                                                                                    <button
+                                                                                                  onClick={() => {
+                                                                                                                if (isEditing) handleSaveProfile();
+                                                                                                                else setIsEditing(true);
+                                                                                                  }}
+                                                                                                  style={{
+                                                                                                                padding: '0.5rem 1rem',
+                                                                                                                borderRadius: '8px',
+                                                                                                                background: isEditing ? '#22c55e' : '#f1f5f9',
+                                                                                                                color: isEditing ? 'white' : '#475569',
+                                                                                                                border: 'none',
+                                                                                                                fontWeight: 600,
+                                                                                                                cursor: 'pointer'
+                                                                                                  }}
+                                                                                    >
+                                                                                                  {isEditing ? 'Save Changes' : 'Edit Profile'}
+                                                                                    </button>
                                                                       </div>
 
-                                                                      <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', color: '#334155', fontWeight: 700 }}>
-                                                                                                  <MapPin size={20} /> Location
+                                                                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                                                                                    {/* Name */}
+                                                                                    <div>
+                                                                                                  <label style={{ display: 'block', color: '#64748b', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Full Name</label>
+                                                                                                  {isEditing ? (
+                                                                                                                <input
+                                                                                                                              type="text"
+                                                                                                                              value={formData.fullName}
+                                                                                                                              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                                                                                                                              style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                                                                                                                />
+                                                                                                  ) : (
+                                                                                                                <strong style={{ color: '#1e293b', fontSize: '1.1rem' }}>{formData.fullName || "Not Set"}</strong>
+                                                                                                  )}
                                                                                     </div>
-                                                                                    <div style={{ marginBottom: '0.5rem' }}><span style={{ color: '#64748b' }}>Pincode:</span> {donorProfile?.pincode}</div>
-                                                                                    <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>To update your address, please delete and re-register for now (Hackathon MVP).</p>
+
+                                                                                    {/* Blood Group */}
+                                                                                    <div>
+                                                                                                  <label style={{ display: 'block', color: '#64748b', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Blood Group</label>
+                                                                                                  {isEditing ? (
+                                                                                                                <select
+                                                                                                                              value={formData.bloodGroup}
+                                                                                                                              onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
+                                                                                                                              style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                                                                                                                >
+                                                                                                                              <option value="">Select</option>
+                                                                                                                              <option value="A+">A+</option>
+                                                                                                                              <option value="A-">A-</option>
+                                                                                                                              <option value="B+">B+</option>
+                                                                                                                              <option value="B-">B-</option>
+                                                                                                                              <option value="O+">O+</option>
+                                                                                                                              <option value="O-">O-</option>
+                                                                                                                              <option value="AB+">AB+</option>
+                                                                                                                              <option value="AB-">AB-</option>
+                                                                                                                </select>
+                                                                                                  ) : (
+                                                                                                                <strong style={{ color: '#dc2626', background: '#fee2e2', padding: '0.1rem 0.5rem', borderRadius: '8px' }}>{formData.bloodGroup || "-"}</strong>
+                                                                                                  )}
+                                                                                    </div>
+
+                                                                                    {/* Pincode */}
+                                                                                    <div>
+                                                                                                  <label style={{ display: 'block', color: '#64748b', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Pincode</label>
+                                                                                                  {isEditing ? (
+                                                                                                                <input
+                                                                                                                              type="text"
+                                                                                                                              value={formData.pincode}
+                                                                                                                              onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                                                                                                                              style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                                                                                                                />
+                                                                                                  ) : (
+                                                                                                                <strong style={{ color: '#1e293b' }}>{formData.pincode || "-"}</strong>
+                                                                                                  )}
+                                                                                    </div>
+
+                                                                                    {/* Contact */}
+                                                                                    <div>
+                                                                                                  <label style={{ display: 'block', color: '#64748b', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Contact</label>
+                                                                                                  {isEditing ? (
+                                                                                                                <input
+                                                                                                                              type="text"
+                                                                                                                              value={formData.contact}
+                                                                                                                              onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                                                                                                                              style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                                                                                                                />
+                                                                                                  ) : (
+                                                                                                                <strong style={{ color: '#1e293b' }}>{formData.contact || "-"}</strong>
+                                                                                                  )}
+                                                                                    </div>
+
+                                                                                    {/* Email (Read Only) */}
+                                                                                    <div>
+                                                                                                  <label style={{ display: 'block', color: '#64748b', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Email</label>
+                                                                                                  <div>{user.email}</div>
+                                                                                    </div>
                                                                       </div>
                                                         </div>
 

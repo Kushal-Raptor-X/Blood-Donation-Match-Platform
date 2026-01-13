@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Layout/Navbar';
+import { supabase } from '../services/supabase';
 import { motion } from 'framer-motion';
-import { User, Droplet, MapPin, CheckCircle, Phone, Calendar, Activity, AlertCircle } from 'lucide-react';
+import { User, Droplet, MapPin, CheckCircle, Phone, Calendar, Activity, AlertCircle, Mail, Lock } from 'lucide-react';
 
 // Simple mock components for now
 const Emergency = () => <div className="container" style={{ padding: '5rem', textAlign: 'center' }}><h1>Emergency Page Coming Soon</h1></div>;
@@ -13,6 +14,8 @@ import { addDonor } from '../services/donorService'; // Import Service
 const DonorRegister = () => {
               const navigate = useNavigate();
               const [formData, setFormData] = useState({
+                            email: '',
+                            password: '',
                             fullName: '',
                             bloodGroup: '',
                             pincode: '',
@@ -59,17 +62,57 @@ const DonorRegister = () => {
 
                             setLoading(true);
 
-                            // Call Firebase Service
-                            const result = await addDonor(formData);
+                            // 1. Create Auth User
+                            const { data: authData, error: authError } = await supabase.auth.signUp({
+                                          email: formData.email,
+                                          password: formData.password,
+                                          options: {
+                                                        emailRedirectTo: window.location.origin,
+                                                        data: {
+                                                                      full_name: formData.fullName,
+                                                        },
+                                          },
+                            });
+
+                            console.log("Supabase SignUp Result:", authData, authError);
+
+                            if (authError) {
+                                          alert("Error creating account: " + authError.message);
+                                          setLoading(false);
+                                          return;
+                            }
+
+                            if (!authData?.user?.id) {
+                                          console.error("No User ID returned from SignUp", authData);
+                                          alert("Error: User created but no ID returned. Email confirmation might be required.");
+                                          setLoading(false);
+                                          return;
+                            }
+
+                            // 2. Prepare Donor Data (excluding email/password from public profile if preferred, but email is often useful)
+                            // We need to link the donor profile to the auth user ID
+                            const donorPayload = {
+                                          ...formData,
+                                          user_id: authData.user.id, // Link to Auth User
+                                          is_available: true // Default to available
+                            };
+
+                            // Remove password from payload to not store it in plain text in the table
+                            delete donorPayload.password;
+                            // Email is in Auth table and not in Donors table schema, so must be removed
+                            delete donorPayload.email;
+
+                            // 3. Add Donor Profile
+                            const result = await addDonor(donorPayload);
 
                             setLoading(false);
                             if (result.success) {
                                           setSubmitted(true);
                                           setTimeout(() => {
-                                                        navigate('/emergency'); // Redirect after success
+                                                        navigate('/dashboard'); // Redirect to Dashboard instead of Emergency
                                           }, 2000);
                             } else {
-                                          alert("Error registering donor: " + result.error);
+                                          alert("Error saving donor profile: " + result.error);
                             }
               };
 
@@ -83,8 +126,10 @@ const DonorRegister = () => {
                                                                                     animate={{ scale: 1, opacity: 1 }}
                                                                       >
                                                                                     <CheckCircle size={80} color="var(--color-accent)" style={{ margin: '0 auto 1.5rem' }} />
-                                                                                    <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>You are a Hero!</h2>
-                                                                                    <p style={{ color: '#64748b' }}>Thank you for registering as a blood donor. We will notify you when there is an emergency near you.</p>
+                                                                                    <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Registration Successful!</h2>
+                                                                                    <p style={{ color: '#64748b' }}>
+                                                                                                  Registration complete! Redirecting to dashboard...
+                                                                                    </p>
                                                                       </motion.div>
                                                         </div>
                                           </>
@@ -112,6 +157,41 @@ const DonorRegister = () => {
                                                                       }}
                                                         >
                                                                       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+                                                                                    {/* Email */}
+                                                                                    <div>
+                                                                                                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', color: '#475569' }}>Email Address</label>
+                                                                                                  <div style={{ position: 'relative' }}>
+                                                                                                                <Mail size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94a3b8' }} />
+                                                                                                                <input
+                                                                                                                              type="email"
+                                                                                                                              name="email"
+                                                                                                                              required
+                                                                                                                              placeholder="your@email.com"
+                                                                                                                              value={formData.email}
+                                                                                                                              onChange={handleChange}
+                                                                                                                              style={{ width: '100%', padding: '0.75rem 0.75rem 0.75rem 2.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1', outline: 'none' }}
+                                                                                                                />
+                                                                                                  </div>
+                                                                                    </div>
+
+                                                                                    {/* Password */}
+                                                                                    <div>
+                                                                                                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', color: '#475569' }}>Password</label>
+                                                                                                  <div style={{ position: 'relative' }}>
+                                                                                                                <Lock size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94a3b8' }} />
+                                                                                                                <input
+                                                                                                                              type="password"
+                                                                                                                              name="password"
+                                                                                                                              required
+                                                                                                                              minLength="6"
+                                                                                                                              placeholder="At least 6 characters"
+                                                                                                                              value={formData.password}
+                                                                                                                              onChange={handleChange}
+                                                                                                                              style={{ width: '100%', padding: '0.75rem 0.75rem 0.75rem 2.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1', outline: 'none' }}
+                                                                                                                />
+                                                                                                  </div>
+                                                                                    </div>
 
                                                                                     {/* Name */}
                                                                                     <div>
