@@ -45,6 +45,22 @@ const Navbar = () => {
                                                                                                   Be a Donor
                                                                                     </motion.button>
                                                                       </Link>
+                                                                      <Link to="/register-bank">
+                                                                                    <motion.button
+                                                                                                  whileHover={{ scale: 1.05 }}
+                                                                                                  whileTap={{ scale: 0.95 }}
+                                                                                                  style={{
+                                                                                                                background: 'transparent',
+                                                                                                                border: '2px solid #2563eb', // Blue to distinguish?
+                                                                                                                color: '#2563eb',
+                                                                                                                padding: '0.6rem 1.2rem',
+                                                                                                                borderRadius: 'var(--radius-md)',
+                                                                                                                fontWeight: 700
+                                                                                                  }}
+                                                                                    >
+                                                                                                  For Blood Bank
+                                                                                    </motion.button>
+                                                                      </Link>
                                                                       <Link to="/emergency">
                                                                                     <motion.button
                                                                                                   whileHover={{ scale: 1.05 }}

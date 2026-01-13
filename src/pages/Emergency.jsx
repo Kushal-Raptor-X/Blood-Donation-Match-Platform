@@ -4,16 +4,17 @@ import Navbar from '../components/Layout/Navbar';
 import DonorMap from '../components/Map/DonorMap';
 
 import { motion } from 'framer-motion';
-import { MapPin, Phone, MessageCircle, Clock, AlertTriangle, Heart } from 'lucide-react';
+import { MapPin, Phone, MessageCircle, Clock, AlertTriangle, Heart, Globe } from 'lucide-react';
 import { useJsApiLoader } from '@react-google-maps/api';
 
-import { getDonors, createEmergencyAlert } from '../services/donorService';
+import { getDonors, getBloodBanks, createEmergencyAlert } from '../services/donorService';
 
 const libraries = ['places', 'geometry'];
 
 const Emergency = () => {
     const location = useLocation();
     const [donors, setDonors] = useState([]);
+    const [bloodBanks, setBloodBanks] = useState([]);
     const [processedDonors, setProcessedDonors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [recipientBloodGroup, setRecipientBloodGroup] = useState(location.state?.bloodGroup || 'O+');
@@ -37,7 +38,11 @@ const Emergency = () => {
         const fetchInitialData = async () => {
             try {
                 const data = await getDonors();
-                if (mounted) setDonors(data || []);
+                const banks = await getBloodBanks();
+                if (mounted) {
+                    setDonors(data || []);
+                    setBloodBanks(banks || []);
+                }
 
                 // Safe Geolocation
                 if (navigator.geolocation) {
@@ -162,7 +167,12 @@ const Emergency = () => {
         return Math.round(R * c * 10) / 10;
     };
 
+    const [filter, setFilter] = useState('all'); // 'all', 'donor', 'bank'
+
+    // ... (helper functions)
+
     const getCompatibleBloodGroups = (recipientGroup) => {
+        // ... (existing switch case)
         switch (recipientGroup) {
             case 'O-': return ['O-'];
             case 'O+': return ['O-', 'O+'];
@@ -176,9 +186,55 @@ const Emergency = () => {
         }
     };
 
-    const finalDisplayList = recipientBloodGroup
-        ? processedDonors.filter(d => getCompatibleBloodGroups(recipientBloodGroup).includes(d.bloodGroup))
-        : processedDonors;
+    const finalDisplayList = React.useMemo(() => {
+        let combined = [];
+
+        // 1. Filter Donors
+        if (filter === 'all' || filter === 'donor') {
+            const compatibleDonors = recipientBloodGroup
+                ? processedDonors.filter(d => getCompatibleBloodGroups(recipientBloodGroup).includes(d.bloodGroup))
+                : processedDonors;
+            combined = [...combined, ...compatibleDonors];
+        }
+
+        // 2. Filter Banks
+        if (filter === 'all' || filter === 'bank') {
+            // Apply similar logic for Banks if needed (e.g. if they have 'inventory' field)
+            combined = [...combined, ...bloodBanks];
+        }
+
+        // 3. Enrich & Sort
+        const enriched = combined.map(item => {
+            // If already processed (Donor) return
+            if (item.distance !== undefined) return item;
+
+            // Logic for Blood Banks (or unprocessed items)
+            if (item.location && typeof item.location.lat === 'number' && patientLocation) {
+                const dist = calculateDistance(patientLocation.lat, patientLocation.lng, item.location.lat, item.location.lng);
+                return {
+                    ...item,
+                    distance: dist,
+                    time: Math.round((dist / 20) * 60), // Assume 20km/h avg speed in city
+                    type: item.type || 'Blood Bank' // Ensure type is set
+                };
+            }
+            return { ...item, distance: 999, time: 999, type: item.type || (item.inventory ? 'Blood Bank' : 'Donor') };
+        });
+
+        // 4. Final filter for Compatibility (Banks check Inventory)
+        const finalResults = enriched.filter(item => {
+            if (item.type === 'Blood Bank') {
+                // Check if bank has stock for recipient
+                // If inventory is null/undefined, assume YES (safe fallback)
+                // If inventory exists, check specific key
+                if (!item.inventory) return true;
+                return item.inventory[recipientBloodGroup] === true;
+            }
+            return true; // Donors already filtered above
+        });
+
+        return finalResults.sort((a, b) => a.distance - b.distance);
+    }, [filter, processedDonors, bloodBanks, recipientBloodGroup, patientLocation]);
 
     // Handle Selection (Bi-directional)
     const handleSelectDonor = (donor) => {
@@ -237,9 +293,29 @@ const Emergency = () => {
                     <div style={{ padding: '1.5rem', borderBottom: '1px solid #e2e8f0' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                             <h2 style={{ fontSize: '1.5rem', color: '#1e293b', margin: 0 }}>Emergency Search</h2>
-                            <span style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem', background: '#f0f9ff', color: '#0369a1', borderRadius: '12px' }}>
-                                {locationStatus}
-                            </span>
+                        </div>
+
+                        {/* Filter Toggles */}
+                        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                            {['all', 'donor', 'bank'].map(f => (
+                                <button
+                                    key={f}
+                                    onClick={() => setFilter(f)}
+                                    style={{
+                                        flex: 1,
+                                        padding: '0.5rem',
+                                        borderRadius: '8px',
+                                        border: filter === f ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                                        background: filter === f ? '#eff6ff' : 'white',
+                                        color: filter === f ? '#2563eb' : '#64748b',
+                                        fontWeight: 700,
+                                        textTransform: 'capitalize',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    {f === 'bank' ? 'Blood Banks' : f === 'donor' ? 'Donors' : 'All'}
+                                </button>
+                            ))}
                         </div>
 
                         <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
@@ -317,7 +393,11 @@ const Emergency = () => {
                                         </div>
 
                                         <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.75rem' }}>
-                                            {donor.pincode} • {donor.gender || 'Donor'} • {donor.age ? `${donor.age} yrs` : ''}
+                                            {donor.type === 'Blood Bank' ? (
+                                                <span style={{ color: '#16a34a', fontWeight: 600 }}>Open 24/7 • Blood Bank</span>
+                                            ) : (
+                                                <>{donor.pincode} • {donor.gender || 'Donor'} • {donor.age ? `${donor.age} yrs` : ''}</>
+                                            )}
                                         </div>
 
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -327,6 +407,16 @@ const Emergency = () => {
                                             <button style={{ flex: 1, padding: '0.5rem', background: '#2563eb', color: 'white', borderRadius: '6px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', fontSize: '0.9rem' }}>
                                                 <MessageCircle size={14} /> Chat
                                             </button>
+                                            {donor.website && (
+                                                <a
+                                                    href={donor.website}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    style={{ flex: 1, padding: '0.5rem', background: '#0f172a', color: 'white', borderRadius: '6px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', fontSize: '0.9rem', textDecoration: 'none' }}
+                                                >
+                                                    <Globe size={14} /> Web
+                                                </a>
+                                            )}
                                         </div>
                                     </motion.div>
                                 );

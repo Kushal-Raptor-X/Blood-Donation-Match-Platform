@@ -121,45 +121,61 @@ const Home = () => {
                             </p>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                            <Link to="/emergency">
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'center' }}>
+                            <Link to="/emergency" style={{ textDecoration: 'none' }}>
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     style={{
-                                        background: 'var(--color-primary)',
-                                        color: 'white',
-                                        padding: '1rem 2.5rem',
+                                        background: 'transparent',
+                                        color: '#2563eb', // Blue
+                                        padding: '1rem 1.5rem',
                                         fontSize: '1.1rem',
                                         borderRadius: '50px',
-                                        boxShadow: '0 10px 25px -5px rgba(220, 20, 60, 0.4)',
                                         fontWeight: 700,
-                                        border: 'none',
+                                        border: '2px solid #2563eb', // Blue
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '0.5rem'
                                     }}
                                 >
                                     <Activity size={20} />
-                                    Find Donors Now
+                                    Find Blood Now
                                 </motion.button>
                             </Link>
-                            <Link to="/register-donor">
+                            <Link to="/register-donor" style={{ textDecoration: 'none' }}>
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     style={{
-                                        background: 'white',
-                                        color: 'var(--color-text-dark)',
-                                        padding: '1rem 2.5rem',
+                                        background: 'transparent',
+                                        color: '#2563eb', // Blue
+                                        padding: '1rem 1.5rem',
                                         fontSize: '1.1rem',
                                         borderRadius: '50px',
-                                        boxShadow: 'var(--shadow-lg)',
                                         fontWeight: 700,
-                                        border: '1px solid #e2e8f0'
+                                        border: '2px solid #2563eb' // Blue
                                     }}
                                 >
                                     Join as Donor
+                                </motion.button>
+                            </Link>
+
+                            <Link to="/register-bank" style={{ textDecoration: 'none' }}>
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    style={{
+                                        background: 'transparent',
+                                        color: '#2563eb', // Blue
+                                        padding: '1rem 1.5rem',
+                                        fontSize: '1.1rem',
+                                        borderRadius: '50px',
+                                        fontWeight: 700,
+                                        border: '2px solid #2563eb' // Blue
+                                    }}
+                                >
+                                    Join as Blood Bank
                                 </motion.button>
                             </Link>
                         </div>
