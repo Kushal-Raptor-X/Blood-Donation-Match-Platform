@@ -11,6 +11,7 @@ import BloodBankRegister from './pages/BloodBankRegister';
 import BloodBankDashboard from './pages/BloodBankDashboard';
 import DonorDashboard from './pages/DonorDashboard';
 import BloodBankLogin from './pages/BloodBankLogin';
+import About from './pages/About';
 
 // 3. The Emergency Button Feature
 import Emergency from './pages/Emergency';
@@ -22,6 +23,7 @@ function App() {
         <Routes>
           {/* Route for the Blue Pin Map (Home) */}
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
 
           {/* Routes for Login & Donors */}
           <Route path="/login" element={<Login />} />

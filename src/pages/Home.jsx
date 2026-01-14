@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Activity, ShieldCheck, Zap, X, AlertTriangle } from 'lucide-react';
 import { createEmergencyAlert } from '../services/donorService';
 import Navbar from '../components/Layout/Navbar';
+import Footer from '../components/Layout/Footer';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -215,6 +216,8 @@ const Home = () => {
                     </motion.div>
                 </div>
             </div>
+
+            <Footer />
 
             {/* SOS ENTRY MODAL */}
             {
